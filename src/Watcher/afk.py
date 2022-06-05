@@ -14,5 +14,9 @@ def returned_from_afk(afk_active, timeout):
     return has_returned
 
 def is_afk(timeout):
+    afk_binary_path = '/usr/share/Watcher/afk_timer'
     timeout = timeout * 60 * 1000
-    return (int((os.popen('/usr/share/Watcher/afk_timer').read())) > timeout)
+    #If the AFK feature is installed
+    if os.path.isfile(afk_binary_path):
+        return (int((os.popen(afk_binary_path).read())) > timeout)
+    return False

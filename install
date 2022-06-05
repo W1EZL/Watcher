@@ -3,20 +3,32 @@
 checkmark_success='\033[1;32m[✔]\033[0m'
 checkmark_fail='\033[0;31m[✔]\033[0m'
 
-echo -e "First of all Thanks for dropping by!"
+echo "First of all Thanks for dropping by!"
 sleep 1s
-echo -e "And...FYI Watcher uses very less resources like almost 10 MBs."
+echo "And...FYI Watcher uses very less resources like almost 10 MBs."
 sleep 2s
-echo -e "So let's start installation process... "
+echo "So let's start installation process..."
 sleep 1s
 
-if gcc -Wall ./src/afk_timer.c -o ./src/Watcher/afk_timer -lXss -lX11; then
-    sudo chmod +x ./src/Watcher/afk_timer
-    echo -e "${checkmark_success} Installing experimental AFKScript"
-else 
-    echo -e "${checkmark_fail} Failed Installing experimental AFKScript \n(try messing with the gcc options -lXss lX11)"
-    exit 1
-fi
+read -rep $'\nDo you want to install the Experimental X11 AFK Feature? y/N\n' yn
+
+installX11AFK(){
+    if gcc -Wall ./src/afk_timer.c -o ./src/Watcher/afk_timer -lXss -lX11; then
+        sudo chmod +x ./src/Watcher/afk_timer
+        echo -e "${checkmark_success} Installed experimental AFKScript"
+    else 
+        echo -e "${checkmark_fail} Failed Installing experimental AFKScript \n(try messing with the gcc options -lXss lX11)"
+        exit 1
+    fi
+}
+
+case $yn in
+    y|Y|yes|Yes)
+        installX11AFK;;
+    *)
+        echo -e "${checkmark_fail} Skipping AFK install";
+        sleep 1;;
+esac
 
 sudo cp -r ./src/Watcher /usr/share/
 echo -e "${checkmark_success} Copying Watcher to /usr/share/"
