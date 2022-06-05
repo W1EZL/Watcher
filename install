@@ -10,8 +10,6 @@ sleep 2s
 echo "So let's start installation process..."
 sleep 1s
 
-read -rep $'\nDo you want to install the Experimental X11 AFK Feature? y/N\n' yn
-
 installX11AFK(){
     if gcc -Wall ./src/afk_timer.c -o ./src/Watcher/afk_timer -lXss -lX11; then
         sudo chmod +x ./src/Watcher/afk_timer
@@ -22,13 +20,18 @@ installX11AFK(){
     fi
 }
 
-case $yn in
-    y|Y|yes|Yes)
-        installX11AFK;;
-    *)
-        echo -e "${checkmark_fail} Skipping AFK install";
-        sleep 1;;
-esac
+if [[ "$XDG_SESSION_TYPE" == "x11" ]]; then
+    read -rep $'\nDo you want to install the Experimental X11 AFK Feature? y/N\n' yn
+
+    case $yn in
+        y|Y|yes|Yes)
+            installX11AFK;;
+        *)
+            echo -e "${checkmark_fail} Skipping AFK install";
+            sleep 1;;
+    esac
+
+fi
 
 sudo cp -r ./src/Watcher /usr/share/
 echo -e "${checkmark_success} Copying Watcher to /usr/share/"
