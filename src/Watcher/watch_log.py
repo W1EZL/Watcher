@@ -2,6 +2,7 @@ import os
 import csv
 import time
 import get_windows as x
+import afk as y
 from time_operations import time_difference
 
 # get current time whenever the function is called
@@ -32,10 +33,7 @@ def append_line_in_csv(date, closed_time, window_name):
 
 # TODO: AFK feature devlopement (it will be developed after completing alpha product (after whole project up end running)
 
-afk = False
 def log_creation():
-    global afk
-
     filename = "/home/"+os.getlogin()+"/.cache/Watcher/raw_data/"+get_date()+".csv"
     if not(os.path.isfile(filename)):
         with open(filename, 'a') as csvfile:
@@ -43,10 +41,19 @@ def log_creation():
             csvwriter.writerow([get_time(), "00:00:00", ""])
     append_line_in_csv(get_date(), get_time(), "User-logged-in")
 
+    afk = False
+    afkTimeout = 5 # timeout in minutes
+
     while True:
         previous_window = x.active_window()
-        if x.is_window_changed(previous_window) and not(afk):
-            next_window = x.active_window()
+
+        if (y.returned_from_afk(afk, afkTimeout)):
+            previous_window = "AFK"
+            afk = False
+
+        if (x.is_window_changed(previous_window, afk, afkTimeout) and not afk):
+            if(y.is_afk(afkTimeout)):
+                afk = True
             closed_at = get_time() # for next_window its the opening time
             date = get_date()
             filename = "/home/"+os.getlogin()+"/.cache/Watcher/raw_data/"+date+".csv"
@@ -57,15 +64,11 @@ def log_creation():
                     prev_file = "/home/"+os.getlogin()+"/.cache/Watcher/raw_data/"+prev_date+".csv"
                     with open(prev_file, 'r') as file:
                         last_app_time = file.readlines()[-1][0:8]
-                    csvwriter.writerow([get_time(), time_difference(last_app_time, closed_at), previous_window])
+                    csvwriter.writerow([get_time(), time_difference(last_app_time, closed_at), (os.popen('/usr/share/Watcher/afk').read())])
 
             else:
                 # appends line when app gets closed
                 append_line_in_csv(date, closed_at, previous_window)
-
-        if afk:
-            afk_closed_time = get_time()
-            append_line_in_csv(date, afk_closed_time, "AFK")
-
+       
 if __name__ == "__main__":
     log_creation()

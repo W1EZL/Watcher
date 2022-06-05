@@ -18,8 +18,9 @@ def extract_data(date):
             reader = csv.reader(file)
             for row in reader:
                 for column in row:
-                    l.append([column[18::],column[9:17]])
-                    d.update({column[18::]: "O"})
+                    if (column[18::] != "AFK"):
+                        l.append([column[18::],column[9:17]])
+                        d.update({column[18::]: "O"})
     else:
         None
 

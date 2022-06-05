@@ -1,5 +1,6 @@
 import os
 import time
+from afk import get_afk_status
 
 class window:
     def __init__(self, class_name, title_name):
@@ -31,13 +32,17 @@ def opened_windows_list():
     windows_list = list(set(windows_list))
     return windows_list
 
+
+
 # returns true if user has move to next app which is not the same as previous
-def is_window_changed(a):
+def is_window_changed(a, afk, timeout):
     result = False
     while not(result):
         time.sleep(1)
         b = active_window()
         if a != b :
+            result = True
+        elif get_afk_status(afk, timeout):
             result = True
         else:
             result = False

@@ -1,59 +1,69 @@
 #!/bin/bash
 
-echo "[✔] First of all Thanks for dropping by!."
+checkmark_success='\033[1;32m[✔]\033[0m'
+checkmark_fail='\033[0;31m[✔]\033[0m'
+
+echo -e "First of all Thanks for dropping by!"
 sleep 1s
-echo "[✔] And...FYI Watcher uses very less resources like almost 10 MBs."
+echo -e "And...FYI Watcher uses very less resources like almost 10 MBs."
 sleep 2s
-echo "[✔] Also some of the features are in development AFK is one of them"
-sleep 2s
-echo "[✔] So let's start installation process... "
+echo -e "So let's start installation process... "
+sleep 1s
+
+if gcc -Wall ./src/afk_timer.c -o ./src/Watcher/afk_timer -lXss -lX11; then
+    sudo chmod +x ./src/Watcher/afk_timer
+    echo -e "${checkmark_success} Installing experimental AFKScript"
+else 
+    echo -e "${checkmark_fail} Failed Installing experimental AFKScript \n(try messing with the gcc options -lXss lX11)"
+    exit 1
+fi
 
 sudo cp -r ./src/Watcher /usr/share/
-echo "[✔] Copying Watcher to /usr/share/"
+echo -e "${checkmark_success} Copying Watcher to /usr/share/"
 sudo cp -r ./src/bin/watcher /usr/local/bin/
-echo "[✔] Copying watcher executable to /usr/local/bin/"
+echo -e "${checkmark_success} Copying watcher executable to /usr/local/bin/"
 sudo chmod +x /usr/local/bin/watcher
-echo "[✔] Making it executable by giving it permission"
+echo -e "${checkmark_success} Making it executable by giving it permission"
 
 # making directory for log-files (where all you daily logs are stored)
 mkdir -p ~/.cache/Watcher/
-echo "[✔] To store raw_data making directory as ~/.cache/Watcher"
+echo -e "${checkmark_success} To store raw_data making directory as ~/.cache/Watcher"
 mkdir -p ~/.cache/Watcher/raw_data/
 mkdir -p ~/.cache/Watcher/Analysis/
 
-# resolving confilict with previous version of watcher
-echo "[✔] Checking whether you had installed previous version of Watcher so removing those conflicts if yes"
-if [ -f "$HOME/.config/systemd/user/watcher.service" ]; then
-    systemctl --user disable --now watcher.service
-    rm -rf $HOME/.config/systemd/user/watcher.service
-elif [ -f "$HOME/.local/bin/watcher" ]; then
-    rm -rf $HOME/.local/bin/watcher
-fi
-
-# deleting folowing lines "[ -f /etc/xprofile ] && . /etc/xprofile/" and "[ -f ~/.xprofile ] && . ~/.xprofile"
-sed -i '/xprofile/d' ~/.xinitrc
-
-# checking wherther is ~/.xprofile is sourced in ~/.xintrc or not
-count1=$(grep -c "xprofile" $HOME/.xinitrc)
-# checking whether user have used watcher before as well as xprofile filed setup or not
-if [ -f "$HOME/.xprofile" ]; then
-    count2=$(grep -c "watcher --start" $HOME/.xprofile)
-else
-    count2=0
-fi
-
-echo "[✔] Making sure that it will run at starting of each xsession afterward"
-
-if [ $count1 = 0 ] & [ $count2 = 0 ];then
-    sed -i '/bin/a \source ~/.xprofile' ~/.xinitrc
-    echo "killall watcher" >> $HOME/.xprofile
-    echo "watcher --start &" >> $HOME/.xprofile
-elif [ $count1 > 0 ] & [ $count2 = 0 ];then
-    echo "killall watcher" >> $HOME/.xprofile
-    echo "watcher --start &" >> $HOME/.xprofile
-elif [ $count2 > 0 ] & [ $count1 = 0 ];then
-    sed -i '/bin/a \source ~/.xprofile' ~/.xinitrc
-fi
+## resolving confilict with previous version of watcher
+#echo -e "${checkmark_success} Checking whether you had installed previous version of Watcher so removing those conflicts if yes"
+#if [ -f "$HOME/.config/systemd/user/watcher.service" ]; then
+#    systemctl --user disable --now watcher.service
+#    rm -rf $HOME/.config/systemd/user/watcher.service
+#elif [ -f "$HOME/.local/bin/watcher" ]; then
+#    rm -rf $HOME/.local/bin/watcher
+#fi
+#
+## deleting folowing lines "[ -f /etc/xprofile ] && . /etc/xprofile/" and "[ -f ~/.xprofile ] && . ~/.xprofile"
+#sed -i '/xprofile/d' ~/.xinitrc
+#
+## checking wherther is ~/.xprofile is sourced in ~/.xintrc or not
+#count1=$(grep -c "xprofile" $HOME/.xinitrc)
+## checking whether user have used watcher before as well as xprofile filed setup or not
+#if [ -f "$HOME/.xprofile" ]; then
+#    count2=$(grep -c "watcher --start" $HOME/.xprofile)
+#else
+#    count2=0
+#fi
+#
+#echo -e "${checkmark_success} Making sure that it will run at starting of each xsession afterward"
+#
+#if [ $count1 = 0 ] & [ $count2 = 0 ];then
+#    sed -i '/bin/a \source ~/.xprofile' ~/.xinitrc
+#    echo "killall watcher" >> $HOME/.xprofile
+#    echo "watcher --start &" >> $HOME/.xprofile
+#elif [ $count1 > 0 ] & [ $count2 = 0 ];then
+#    echo "killall watcher" >> $HOME/.xprofile
+#    echo "watcher --start &" >> $HOME/.xprofile
+#elif [ $count2 > 0 ] & [ $count1 = 0 ];then
+#    sed -i '/bin/a \source ~/.xprofile' ~/.xinitrc
+#fi
 
 echo ""
 echo "Now you can use Watcher after restart. And see you around"
